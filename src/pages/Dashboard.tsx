@@ -37,7 +37,7 @@ export default function Dashboard() {
 
   const handleDeleteRoute = async (id: string) => {
     if (!window.confirm('Tem certeza que deseja excluir esta rota?')) return;
-    
+
     setIsDeleting(id);
     try {
       const { error } = await supabase
@@ -46,7 +46,7 @@ export default function Dashboard() {
         .eq('id', id);
 
       if (error) throw error;
-      
+
       setRoutes(routes.filter(r => r.id !== id));
       // Refresh stats
       fetchRoutes();
@@ -123,12 +123,12 @@ export default function Dashboard() {
 
       if (data) {
         setRoutes(data);
-        
+
         // Calculate stats
         const totalProfit = data.reduce((acc, curr) => acc + Number(curr.real_profit), 0);
         const totalKm = data.reduce((acc, curr) => acc + Number(curr.km_total), 0);
         const totalRevenue = data.reduce((acc, curr) => acc + Number(curr.route_value), 0);
-        
+
         setStats({
           totalProfit,
           totalKm,
@@ -162,11 +162,11 @@ export default function Dashboard() {
               Resumo Mensal
             </p>
           </div>
-          
+
           {/* Month Picker */}
           <div className="relative">
-            <input 
-              type="month" 
+            <input
+              type="month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
               className="bg-[#1c1c1e] border border-zinc-800 text-white text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-[#ee4d2d] [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
@@ -185,12 +185,12 @@ export default function Dashboard() {
               <div className="absolute top-0 right-0 p-6 opacity-10">
                 <DollarSign size={80} />
               </div>
-              
+
               <span className="text-zinc-400 text-[11px] font-bold uppercase tracking-widest mb-2 block">Lucro Real do Mês</span>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold text-white">R$ {stats.totalProfit.toFixed(2)}</span>
               </div>
-              
+
               <div className="mt-6 grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest block mb-1">Rotas Feitas</span>
@@ -228,7 +228,7 @@ export default function Dashboard() {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip 
+                      <Tooltip
                         formatter={(value: number) => `R$ ${value.toFixed(2)}`}
                         contentStyle={{ backgroundColor: '#2c2c2e', border: '1px solid #3f3f46', borderRadius: '16px', color: '#fff' }}
                         itemStyle={{ color: '#fff', fontWeight: 600 }}
@@ -246,7 +246,7 @@ export default function Dashboard() {
             {/* Recent Routes List */}
             <div>
               <h3 className="text-zinc-400 text-[11px] font-bold uppercase tracking-widest mb-4 pl-2">Histórico de Rotas</h3>
-              
+
               {routes.length === 0 ? (
                 <div className="bg-[#1c1c1e] rounded-[2rem] p-8 text-center border border-zinc-800/50">
                   <Route size={32} className="mx-auto text-zinc-600 mb-3" />
@@ -257,6 +257,7 @@ export default function Dashboard() {
                   {routes.map((route) => {
                     // Fix timezone issue by adding time to the date string
                     const routeDate = new Date(`${route.route_date}T12:00:00`);
+                    const isValidDate = !isNaN(routeDate.getTime());
                     return (
                       <div key={route.id} className="bg-[#1c1c1e] rounded-3xl p-4 border border-zinc-800/50">
                         <div className="flex items-center justify-between mb-3">
@@ -266,7 +267,9 @@ export default function Dashboard() {
                             </div>
                             <div>
                               <p className="font-bold text-white">R$ {Number(route.route_value).toFixed(2)}</p>
-                              <p className="text-xs text-zinc-500 mt-0.5">{format(routeDate, "dd 'de' MMM", { locale: ptBR })}</p>
+                              <p className="text-xs text-zinc-500 mt-0.5">
+                                {isValidDate ? format(routeDate, "dd 'de' MMM", { locale: ptBR }) : 'Data inválida'}
+                              </p>
                             </div>
                           </div>
                           <div className="text-right">
@@ -276,16 +279,16 @@ export default function Dashboard() {
                             <p className="text-xs text-zinc-500 mt-0.5">{Number(route.km_total).toFixed(1)} km</p>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-2 pt-3 border-t border-zinc-800/50">
-                          <button 
+                          <button
                             onClick={() => setEditingRoute(route)}
                             className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all text-xs font-bold"
                           >
                             <Pencil size={14} />
                             Editar
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleDeleteRoute(route.id)}
                             disabled={isDeleting === route.id}
                             className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-red-500/5 text-red-500/40 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-bold disabled:opacity-50"
@@ -309,23 +312,23 @@ export default function Dashboard() {
             <div className="w-full max-w-md bg-[#1c1c1e] rounded-[2.5rem] border border-zinc-800 shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 duration-300">
               <div className="p-6 border-b border-zinc-800 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white">Editar Rota</h2>
-                <button 
+                <button
                   onClick={() => setEditingRoute(null)}
                   className="p-2 hover:bg-zinc-800 rounded-full text-zinc-400 transition-colors"
                 >
                   <X size={20} />
                 </button>
               </div>
-              
+
               <form onSubmit={handleUpdateRoute} className="p-6 space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-2">Data da Rota</label>
                   <div className="bg-zinc-900/50 rounded-2xl p-3 flex items-center border border-zinc-800 focus-within:border-[#ee4d2d] transition-colors">
                     <Calendar size={18} className="text-zinc-500 mr-3" />
-                    <input 
+                    <input
                       type="date"
                       value={editingRoute.route_date}
-                      onChange={(e) => setEditingRoute({...editingRoute, route_date: e.target.value})}
+                      onChange={(e) => setEditingRoute({ ...editingRoute, route_date: e.target.value })}
                       className="bg-transparent text-white font-bold w-full focus:outline-none"
                       required
                     />
@@ -336,11 +339,11 @@ export default function Dashboard() {
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-2">Valor da Rota (R$)</label>
                   <div className="bg-zinc-900/50 rounded-2xl p-3 flex items-center border border-zinc-800 focus-within:border-[#ee4d2d] transition-colors">
                     <DollarSign size={18} className="text-emerald-400 mr-3" />
-                    <input 
+                    <input
                       type="number"
                       step="0.01"
                       value={editingRoute.route_value}
-                      onChange={(e) => setEditingRoute({...editingRoute, route_value: e.target.value})}
+                      onChange={(e) => setEditingRoute({ ...editingRoute, route_value: e.target.value })}
                       className="bg-transparent text-white font-bold w-full focus:outline-none"
                       placeholder="0.00"
                       required
@@ -352,11 +355,11 @@ export default function Dashboard() {
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-2">KM Rodado</label>
                   <div className="bg-zinc-900/50 rounded-2xl p-3 flex items-center border border-zinc-800 focus-within:border-[#ee4d2d] transition-colors">
                     <Route size={18} className="text-blue-400 mr-3" />
-                    <input 
+                    <input
                       type="number"
                       step="0.1"
                       value={editingRoute.km_total}
-                      onChange={(e) => setEditingRoute({...editingRoute, km_total: e.target.value})}
+                      onChange={(e) => setEditingRoute({ ...editingRoute, km_total: e.target.value })}
                       className="bg-transparent text-white font-bold w-full focus:outline-none"
                       placeholder="0.0"
                       required
